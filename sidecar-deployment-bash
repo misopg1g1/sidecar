@@ -1,0 +1,4 @@
+POD_NAMES=$(kubectl get deployment -n ${BRANCH_NAME} --no-headers=true | awk '/micro/{print $1}')
+if [ ! -z "$POD_NAMES" ]; then
+  kubectl rollout restart -n ${BRANCH_NAME} deployment $POD_NAMES
+fi
