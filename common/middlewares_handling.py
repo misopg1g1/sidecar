@@ -19,6 +19,7 @@ def decryptor_middleware(app: FastAPI):
     @app.middleware("http")
     async def decrypt_body(request: Request, call_next):
         method_logger = logger.global_logger.getChild("decrypt_body")
+        scope = request.scope
         receive = await request._receive()
         send = request._send
         if bytes_body := receive.get("body"):
@@ -41,18 +42,26 @@ def decryptor_middleware(app: FastAPI):
             new_bytes_body = json.dumps(clean_json_body).encode()
             receive["body"] = new_bytes_body
 
-            async def new_receive() -> Message:
-                return receive
+        async def new_receive() -> Message:
+            return receive
 
-            request = Request(request.scope, new_receive, send)
-        method = request.method
-        headers = request.headers
-        body = await request.json()
-        query_params = request.query_params
-        micro_url = f"{AppConfigValues.NEST_SERVICE_URL}{request.scope.get('path')}"
-        response: requests.Response = requests.request(method,
-                                                       micro_url,
-                                                       headers=dict(headers.items()),
-                                                       params=tuple(query_params.items()),
-                                                       data=body)
-        return JSONResponse(status_code=response.status_code, content=response.json())
+        request = Request(scope, new_receive, send)
+        if scope.get("path") not in ["/", "/docs", "/openapi.json", "/health/", "/health"]:
+            method = request.method
+            headers = request.headers
+            body = await request.json()
+            query_params = request.query_params
+            micro_url = f"{AppConfigValues.MICRO_SERVICE_URL}{scope.get('path')}"
+            try:
+                response: requests.Response = requests.request(method,
+                                                               micro_url,
+                                                               headers=dict(headers.items()),
+                                                               params=tuple(query_params.items()),
+                                                               data=body)
+                return JSONResponse(status_code=response.status_code, content=response.json())
+            except:
+                method_logger.error(traceback.format_exc())
+                return JSONResponse(status_code=503, content={"error": ResponseMessagesValues.GENERAL_REQUESTS_FAILURE_MESSAGE})
+        else:
+            response = await call_next(request)
+            return response

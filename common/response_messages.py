@@ -21,3 +21,4 @@ class ResponseMessagesValues:
     NO_MATCHING_HATCH = "No se proporcionó el hash o el mismo no coincide con el cuerpo del mensaje"
     INVALID_ENCRYPTION_KEY = "La llave de verificación del cuerpo no es valida"
     GENERAL_ENCRYPTION_ERROR_MSG = "Ocurrio un error al verificar el cuerpo del mensaje"
+    GENERAL_REQUESTS_FAILURE_MESSAGE = "El servicio no se encuentra disponible por el momento. Porfavor intente mas tarde."
