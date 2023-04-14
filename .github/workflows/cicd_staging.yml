@@ -75,3 +75,30 @@ jobs:
           rm -rf new_docker_image_bash.sh
           echo "La imagen $REGISTRY_HOST/$REGISTRY_SPACE/${repo_name}-${BRANCH_NAME}:${IMAGE_VERSION} se construyo y se subió exitosamente"
           echo "La imagen $REGISTRY_HOST/$REGISTRY_SPACE/${repo_name}-${BRANCH_NAME}:latest se construyo y se subió exitosamente"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      REPO_NAME: ${{ github.event.repository.name }}
+      REGISTRY_SPACE: ${{ secrets.REGISTRY_SPACE }}
+      REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Configurar kubectl
+        uses: tale/kubectl-action@v1
+        with:
+          base64-kube-config: ${{ secrets.STAGING_BASE64_KUBECONFIG }}
+      - name: desplegar servicio
+        run: |
+          BRANCH_NAME=$(basename $GITHUB_REF)
+          POD_NAMES=$(kubectl get deployment -n ${BRANCH_NAME} --no-headers=true | awk '/micro/{print $1}')
+          if [ ! -z "${POD_NAMES}" ]; then
+            kubectl rollout restart -n ${BRANCH_NAME} deployment ${POD_NAMES}
+          fi
+      - name: Eliminar config file y new_deployment
+        run: |
+          BRANCH_NAME=$(basename $GITHUB_REF)
+          echo "Se desplegaron la aplicación y el servicio en la rama ${BRANCH_NAME} de manera exitosa"
+          rm -rf $HOME/.kube/config
