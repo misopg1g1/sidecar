@@ -28,7 +28,8 @@ def decryptor_middleware(app: FastAPI):
             try:
                 fernet = Fernet(AppConfigValues.ENCRYPTION_KEY_SECRET.encode())
                 if not fernet.decrypt(raw_json_body.get('hash')).decode() == hashlib.md5(
-                        json.dumps(clean_json_body).encode()).hexdigest():
+                        json.dumps(clean_json_body, separators=(",", ":"), sort_keys=True,
+                                   ensure_ascii=False).encode()).hexdigest():
                     return JSONResponse(status_code=403,
                                         content={"error": ResponseMessagesValues.NO_MATCHING_HATCH})
             except (InvalidToken, ValueError):
@@ -61,7 +62,8 @@ def decryptor_middleware(app: FastAPI):
                 return JSONResponse(status_code=response.status_code, content=response.json())
             except:
                 method_logger.error(traceback.format_exc())
-                return JSONResponse(status_code=503, content={"error": ResponseMessagesValues.GENERAL_REQUESTS_FAILURE_MESSAGE})
+                return JSONResponse(status_code=503,
+                                    content={"error": ResponseMessagesValues.GENERAL_REQUESTS_FAILURE_MESSAGE})
         else:
             response = await call_next(request)
             return response
