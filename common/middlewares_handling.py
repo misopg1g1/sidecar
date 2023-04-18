@@ -1,5 +1,6 @@
 import traceback
 
+import helpers
 from config import AppConfigValues
 from helpers import logger
 
@@ -27,9 +28,7 @@ def decryptor_middleware(app: FastAPI):
             clean_json_body = dict(filter(lambda kv: kv[0] not in ["hash"], json.loads(bytes_body).items()))
             try:
                 fernet = Fernet(AppConfigValues.ENCRYPTION_KEY_SECRET.encode())
-                if not fernet.decrypt(raw_json_body.get('hash')).decode() == hashlib.md5(
-                        json.dumps(clean_json_body, separators=(",", ":"), sort_keys=True,
-                                   ensure_ascii=False).encode()).hexdigest():
+                if not fernet.decrypt(raw_json_body.get('hash')).decode() == helpers.get_hash(clean_json_body):
                     return JSONResponse(status_code=403,
                                         content={"error": ResponseMessagesValues.NO_MATCHING_HATCH})
             except (InvalidToken, ValueError):
