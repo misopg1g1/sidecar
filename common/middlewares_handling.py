@@ -49,7 +49,8 @@ def decryptor_middleware(app: FastAPI):
         if scope.get("path") not in ["/", "/docs", "/openapi.json", "/health/", "/health"]:
             method = request.method
             headers = request.headers
-            body = await request.json()
+            body = await request.body()
+            body = json.loads(body or '{}') or None
             query_params = request.query_params
             micro_url = f"{AppConfigValues.MICRO_SERVICE_URL}{scope.get('path')}"
             try:
