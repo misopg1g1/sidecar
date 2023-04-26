@@ -58,7 +58,7 @@ def decryptor_middleware(app: FastAPI):
                                                                micro_url,
                                                                headers=dict(headers.items()),
                                                                params=tuple(query_params.items()),
-                                                               data=body)
+                                                               json=body)
                 return JSONResponse(status_code=response.status_code, content=response.json())
             except:
                 method_logger.error(traceback.format_exc())
