@@ -59,7 +59,7 @@ def decryptor_middleware(app: FastAPI):
                                                                headers=dict(headers.items()),
                                                                params=tuple(query_params.items()),
                                                                json=body)
-                return JSONResponse(status_code=response.status_code, content=response.json())
+                return JSONResponse(status_code=response.status_code, content=response.json() if response.content else None)
             except:
                 method_logger.error(traceback.format_exc())
                 return JSONResponse(status_code=503,
