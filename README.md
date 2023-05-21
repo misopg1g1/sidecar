@@ -44,9 +44,13 @@ Sigue estos pasos para ejecutar la aplicación de forma local:
 
 2. Ejecuta el siguiente comando para instalar las dependencias de Python:
 
+```shell
+ pip install -r requirements.txt
+```
+
 3. Una vez instaladas las dependencias, ejecuta el siguiente comando para iniciar la aplicación:
 
-```
+```shell
 ENCRYPTION_KEY_SECRET=... MICRO_SERVICE_URL=... python main.py
 ```
 
