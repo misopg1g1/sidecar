@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+
+  sidecar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3001:3001
+    environment:
+      - ENCRYPTION_KEY_SECRET=encryption-key
+      - MICRO_SERVICE_URL=http://microservice-url
